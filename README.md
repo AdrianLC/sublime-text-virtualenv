@@ -1,4 +1,6 @@
 SublimeVirtualenv
 =================
 
-A Sublime Text plugin for virtualenvs
+A Sublime Text plugin for virtualenvs.
+
+**Work in Progress.**
