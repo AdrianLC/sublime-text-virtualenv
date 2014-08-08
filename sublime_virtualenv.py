@@ -39,6 +39,13 @@ class Virtualenv:
 
 class RunOnVirtualenvCommand(sublime_plugin.WindowCommand):
     def run(self, **kwargs):
-        virtualenv = Virtualenv("/home/adrian/.virtualenvs/sublime_virtualenv")
+        venv_location = kwargs.pop('virtualenv', "")
+        virtualenv = self.get_virtualenv(venv_location)
         deep_update(kwargs, virtualenv.get_build_kwargs())
-        self.window.run_command('exec', kwargs)
+        self.window.run_command('exec', kwargs)  # call built-in build command
+
+    def get_virtualenv(self, location=""):
+        if not location:
+            project_settings = self.window.project_data() or {}
+            location = project_settings.get('virtualenv')
+        return Virtualenv(location)
