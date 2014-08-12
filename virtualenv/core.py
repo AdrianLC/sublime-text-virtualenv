@@ -1,5 +1,10 @@
 
+import logging
 import os
+
+
+logger = logging.getLogger(__name__)
+
 
 class Virtualenv:
 
@@ -24,3 +29,21 @@ class Virtualenv:
     @property
     def activated_env(self):
         return {'VIRTUAL_ENV': str(self)}
+
+
+def find_virtualenvs(paths):
+    virtualenvs = []
+    for path in paths:
+        if not os.path.isdir(path):
+            logger.warning("{} is not a directory. Path ignored.".format(path))
+            continue
+        subdirs = filter(os.path.isdir, (os.path.join(path, name) for name in os.listdir(path)))
+        virtualenvs += sorted(filter(is_virtualenv, subdirs))
+    return virtualenvs
+
+
+def is_virtualenv(path):
+    try:
+        return os.path.isdir(os.path.join(path, "bin", "activate"))
+    except IOError:
+        return False

@@ -1,2 +1,2 @@
 
-from .core import Virtualenv
+from .core import Virtualenv, find_virtualenvs
