@@ -7,18 +7,18 @@
         "id": "package-settings",
         "mnemonic": "P",
         "children": [{
-            "caption": "SublimeVirtualenv",
+            "caption": "Virtualenv",
             "children": [{
                 "caption": "Settings – Default",
                 "command": "open_file",
                 "args": {
-                    "file": "${packages}/SublimeVirtualenv/SublimeVirtualenv.sublime-settings"
+                    "file": "${packages}/Virtualenv/Virtualenv.sublime-settings"
                 }
             }, {
                 "caption": "Settings – User",
                 "command": "open_file",
                 "args": {
-                    "file": "${packages}/User/SublimeVirtualenv.sublime-settings"
+                    "file": "${packages}/User/Virtualenv.sublime-settings"
                 }
             }, {
                 "caption": "-"
@@ -26,7 +26,7 @@
                 "caption": "Key Bindings – Default",
                 "command": "open_file",
                 "args": {
-                    "file": "${packages}/SublimeVirtualenv/Default (OSX).sublime-keymap",
+                    "file": "${packages}/Virtualenv/Default (OSX).sublime-keymap",
                     "platform": "OSX"
                 }
             }, {
@@ -40,7 +40,7 @@
                 "caption": "Key Bindings – Default",
                 "command": "open_file",
                 "args": {
-                    "file": "${packages}/SublimeVirtualenv/Default (Linux).sublime-keymap",
+                    "file": "${packages}/Virtualenv/Default (Linux).sublime-keymap",
                     "platform": "Linux"
                 }
             }, {
@@ -54,7 +54,7 @@
                 "caption": "Key Bindings – Default",
                 "command": "open_file",
                 "args": {
-                    "file": "${packages}/SublimeVirtualenv/Default (Windows).sublime-keymap",
+                    "file": "${packages}/Virtualenv/Default (Windows).sublime-keymap",
                     "platform": "Windows"
                 }
             }, {

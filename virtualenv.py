@@ -4,11 +4,11 @@ import os.path
 import sublime
 import sublime_plugin
 
-from .virtualenv import Virtualenv, find_virtualenvs
+from .core import Virtualenv, find_virtualenvs
 
 
 def settings():
-    return sublime.load_settings("SublimeVirtualenv.sublime-settings")
+    return sublime.load_settings("Virtualenv.sublime-settings")
 
 
 class VirtualenvCommand:
