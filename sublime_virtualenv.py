@@ -13,6 +13,15 @@ def settings():
 
 class VirtualenvCommand:
 
+    @property
+    def virtualenv_exec(self):
+        return settings().get('virtualenv_executable')
+
+    @property
+    def virtualenv_directories(self):
+        return [os.path.expanduser(path)
+                for path in settings().get('virtualenv_directories')]
+
     def get_virtualenv(self, **kwargs):
         venv_path = kwargs.pop('virtualenv', "")
 
@@ -43,11 +52,24 @@ class RunOnVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
 
 class ChooseVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
     def run(self, **kwargs):
-        search_dirs = (os.path.expanduser(path)
-            for path in settings().get('virtualenv_directories'))
-        self.available_venvs = find_virtualenvs(search_dirs)
-        self.window.show_quick_panel(self.available_venvs, self.choice_callback)
+        self.available_venvs = find_virtualenvs(self.virtualenv_directories)
+        self.window.show_quick_panel(self.available_venvs, self._set_virtualenv)
 
-    def choice_callback(self, index):
+    def _set_virtualenv(self, index):
         if index != -1:
             self.set_virtualenv(self.available_venvs[index])
+
+
+class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+    def run(self, path="", **kwargs):
+        if path:
+            self.create_virtualenv(os.path.expanduser(path))
+        else:
+            self.window.show_input_panel(
+                "Virtualenv Path:", self.virtualenv_directories[0] + os.path.sep,
+                self.create_virtualenv, None, None)
+
+    def create_virtualenv(self, path):
+        virtualenv = Virtualenv(os.path.normpath(path))
+        self.window.run_command('exec', {'cmd': [self.virtualenv_exec, virtualenv.root]})
+        self.set_virtualenv(virtualenv)

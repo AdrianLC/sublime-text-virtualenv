@@ -1,4 +1,5 @@
 {
+    "virtualenv_executable": "virtualenv",
     "virtualenv_directories": [
         "~/.virtualenvs",
     ]

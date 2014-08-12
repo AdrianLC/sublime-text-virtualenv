@@ -44,6 +44,6 @@ def find_virtualenvs(paths):
 
 def is_virtualenv(path):
     try:
-        return os.path.isdir(os.path.join(path, "bin", "activate"))
+        return os.path.isfile(os.path.join(path, "bin", "activate"))
     except IOError:
         return False
