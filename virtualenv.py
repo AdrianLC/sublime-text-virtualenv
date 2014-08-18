@@ -3,6 +3,7 @@ import os.path
 
 import sublime
 import sublime_plugin
+import Default as sublime_default
 
 from .core import Virtualenv, find_virtualenvs
 
@@ -15,7 +16,7 @@ class VirtualenvCommand:
 
     @property
     def virtualenv_exec(self):
-        return settings().get('virtualenv_executable')
+        return settings().get('executable')
 
     @property
     def virtualenv_directories(self):
@@ -42,12 +43,12 @@ class VirtualenvCommand:
         self.window.set_project_data(project_data)
 
 
-class RunOnVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand):
     def run(self, **kwargs):
         virtualenv = self.get_virtualenv(**kwargs)
         kwargs['path'] = virtualenv.activated_path
         kwargs['env'] = dict(kwargs.get('env', {}), **virtualenv.activated_env)
-        self.window.run_command('exec', kwargs)  # built-in build command
+        super(VirtualenvExecCommand, self).run(**kwargs)
 
 
 class ChooseVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
