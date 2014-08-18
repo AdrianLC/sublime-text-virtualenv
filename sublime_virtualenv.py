@@ -1,5 +1,6 @@
 
 import os.path
+import shlex
 
 import sublime
 import sublime_plugin
@@ -16,7 +17,7 @@ class VirtualenvCommand:
 
     @property
     def virtualenv_exec(self):
-        return settings().get('executable')
+        return shlex.split(settings().get('executable'))
 
     @property
     def virtualenv_directories(self):
@@ -72,5 +73,5 @@ class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
 
     def create_virtualenv(self, path):
         virtualenv = Virtualenv(os.path.normpath(path))
-        self.window.run_command('exec', {'cmd': [self.virtualenv_exec, virtualenv.root]})
+        self.window.run_command('exec', {'cmd': self.virtualenv_exec + [virtualenv.root]})
         self.set_virtualenv(virtualenv)

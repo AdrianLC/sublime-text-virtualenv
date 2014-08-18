@@ -1,12 +1,15 @@
 
 import logging
 import os
+import sys
 
 
 logger = logging.getLogger(__name__)
 
 
 class Virtualenv:
+
+    BIN_DIR = "Scripts" if sys.platform == 'win32' else "bin"
 
     def __init__(self, root):
         self.root = root
@@ -20,7 +23,7 @@ class Virtualenv:
 
     @property
     def path(self):
-        return os.path.join(self.root, "bin")
+        return os.path.join(self.root, self.BIN_DIR)
 
     @property
     def activated_path(self):
@@ -44,6 +47,6 @@ def find_virtualenvs(paths):
 
 def is_virtualenv(path):
     try:
-        return os.path.isfile(os.path.join(path, "bin", "activate"))
+        return os.path.isfile(os.path.join(path, Virtualenv.BIN_DIR, "activate"))
     except IOError:
         return False
