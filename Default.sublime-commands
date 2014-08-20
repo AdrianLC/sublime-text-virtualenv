@@ -1,4 +1,4 @@
 [
-    { "caption": "Virtualenv: New Virtualenv", "command": "new_virtualenv" },
-    { "caption": "Virtualenv: Choose Virtualenv", "command": "choose_virtualenv" }
+    { "caption": "Virtualenv: New", "command": "new_virtualenv" },
+    { "caption": "Virtualenv: Activate", "command": "activate_virtualenv" }
 ]
