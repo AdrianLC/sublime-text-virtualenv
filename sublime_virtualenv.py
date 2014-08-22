@@ -44,6 +44,10 @@ class VirtualenvCommand:
     def find_virtualenvs(self):
         return virtualenv.find_virtualenvs(self.virtualenv_directories)
 
+    def find_pythons(self):
+        extra_paths = tuple(settings().get('extra_paths', []))
+        return virtualenv.find_pythons(extra_paths=extra_paths)
+
 
 class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand):
     def run(self, **kwargs):
@@ -65,15 +69,21 @@ class ActivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand)
 
 
 class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
-    def run(self, path="", **kwargs):
-        if path:
-            self.create_virtualenv(os.path.expanduser(path))
-        else:
-            self.window.show_input_panel(
-                "Virtualenv Path:", self.virtualenv_directories[0] + os.path.sep,
-                self.create_virtualenv, None, None)
+    def run(self, **kwargs):
+        self.window.show_input_panel(
+            "Virtualenv Path:", self.virtualenv_directories[0] + os.path.sep,
+            self.get_python, None, None)
 
-    def create_virtualenv(self, path):
-        venv = os.path.normpath(path)
-        self.window.run_command('exec', {'cmd': self.virtualenv_exec + [venv]})
-        self.set_virtualenv(venv)
+    def get_python(self, venv):
+        self.venv = os.path.expanduser(os.path.normpath(venv))
+        self.found_pythons = self.find_pythons()
+        self.window.show_quick_panel(self.found_pythons, self.create_virtualenv)
+
+    def create_virtualenv(self, python_index):
+        cmd = self.virtualenv_exec
+        if python_index != -1:
+            python = self.found_pythons[python_index]
+            cmd += ['-p', python]
+        cmd += [self.venv]
+        self.window.run_command('exec', {'cmd': cmd})
+        self.set_virtualenv(self.venv)

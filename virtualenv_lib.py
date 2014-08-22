@@ -1,17 +1,20 @@
 
-__all__ = ['activate', 'find_virtualenvs', 'is_virtualenv']
+__all__ = ['activate', 'find_virtualenvs', 'is_virtualenv', 'find_pythons']
 
+from functools import lru_cache
+from itertools import chain
 import logging
 import os
+import re
 import sys
-
-if sys.platform == 'win32':
-    from .windows import *  # noqa
-else:
-    from .posix import *  # noqa
 
 
 logger = logging.getLogger(__name__)
+
+
+VIRTUALENV_BINDIR = "Scripts" if sys.platform == 'win32' else "bin"
+
+PYTHON_NAME_RE = re.compile(r'python[\d\.]*(?:\.exe)?$')
 
 
 def activate(virtualenv):
@@ -20,7 +23,7 @@ def activate(virtualenv):
 
 
 def postactivate_path(virtualenv):
-    current_path = os.environ.get('PATH', "")
+    current_path = os.environ.get('PATH', os.defpath)
     virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
     return os.pathsep.join((virtualenv_path, current_path))  # PATH=/path/to/venv/bin:$PATH
 
@@ -47,3 +50,14 @@ def is_virtualenv(path):
         return False
 
 is_valid = is_virtualenv
+
+
+@lru_cache()
+def find_pythons(paths=(), extra_paths=()):
+    paths = chain(paths or os.environ.get('PATH', os.defpath).split(os.pathsep), extra_paths)
+    pythons = []
+    for path in filter(os.path.isdir, paths):
+        python_names = filter(PYTHON_NAME_RE.match, os.listdir(path))
+        pythons += sorted(filter(os.path.isfile, (os.path.join(path, python)
+                          for python in python_names)))
+    return pythons
