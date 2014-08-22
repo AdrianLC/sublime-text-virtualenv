@@ -28,17 +28,24 @@ class VirtualenvCommand:
         venv = kwargs.pop('virtualenv', "")
 
         if not venv:
-            try:
-                project_data = self.window.project_data() or {}
-                venv = project_data['virtualenv']
-            except KeyError:
-                sublime.error_message("Could not determine virtualenv from settings.")
+            project_data = self.window.project_data() or {}
+            venv = project_data.get('virtualenv', "")
 
         return os.path.expanduser(venv)
 
     def set_virtualenv(self, venv):
         project_data = self.window.project_data() or {}
-        project_data['virtualenv'] = venv
+
+        if venv:
+            project_data['virtualenv'] = venv
+            sublime.status_message("({}) ACTIVATED".format(os.path.basename(venv)))
+        else:
+            try:
+                del project_data['virtualenv']
+                sublime.status_message("DEACTIVATED")
+            except KeyError:
+                pass
+
         self.window.set_project_data(project_data)
 
     def find_virtualenvs(self):
@@ -65,7 +72,16 @@ class ActivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand)
 
     def _set_virtualenv(self, index):
         if index != -1:
-            self.set_virtualenv(self.available_venvs[index])
+            venv = self.available_venvs[index]
+            self.set_virtualenv(venv)
+
+
+class DeactivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+    def run(self, **kwargs):
+        self.set_virtualenv(None)
+
+    def is_enabled(self):
+        return bool(self.get_virtualenv())
 
 
 class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
