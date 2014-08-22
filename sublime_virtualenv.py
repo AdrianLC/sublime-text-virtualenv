@@ -14,8 +14,16 @@ from . import virtualenv_lib as virtualenv
 logger = logging.getLogger(__name__)
 
 
+SETTINGS = "Virtualenv.sublime-settings"
+
+
 def settings():
-    return sublime.load_settings("Virtualenv.sublime-settings")
+    return sublime.load_settings(SETTINGS)
+
+
+def save_settings():
+    sublime.save_settings(SETTINGS)
+settings.save = save_settings
 
 
 class VirtualenvCommand:
@@ -102,6 +110,9 @@ class NewVirtualenvCommand(VirtualenvWindowCommand):
             self.get_python, None, None)
 
     def get_python(self, venv):
+        if not venv:
+            return
+
         self.venv = os.path.expanduser(os.path.normpath(venv))
         self.found_pythons = self.find_pythons()
         self.window.show_quick_panel(self.found_pythons, self.create_virtualenv)
@@ -137,3 +148,24 @@ class RemoveVirtualenvCommand(VirtualenvWindowCommand):
             else:
                 if venv == self.get_virtualenv():
                     self.set_virtualenv(None)
+
+
+class AddVirtualenvDirectoryCommand(VirtualenvWindowCommand):
+    def run(self, **kwargs):
+        self.window.show_input_panel(
+            "Directory path:", os.path.expanduser("~") + os.path.sep,
+            self.add_directory, None, None)
+
+    def add_directory(self, directory):
+        if not directory:
+            return
+
+        directory = os.path.expanduser(os.path.normpath(directory))
+        if not os.path.isdir(directory):
+            sublime.error_message("\"{}\" is not a directory.".format(directory))
+            return
+
+        directories = self.virtualenv_directories
+        directories.append(directory)
+        settings().set('virtualenv_directories', directories)
+        settings.save()
