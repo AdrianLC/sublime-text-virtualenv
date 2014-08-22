@@ -1,12 +1,17 @@
 
+import logging
 import os.path
 import shlex
+import shutil
 
 import sublime
 import sublime_plugin
 import Default as sublime_default
 
 from . import virtualenv_lib as virtualenv
+
+
+logger = logging.getLogger(__name__)
 
 
 def settings():
@@ -47,6 +52,7 @@ class VirtualenvCommand:
                 pass
 
         self.window.set_project_data(project_data)
+        logger.info("Current virtualenv set to \"{}\".".format(venv))
 
     def find_virtualenvs(self):
         return virtualenv.find_virtualenvs(self.virtualenv_directories)
@@ -56,16 +62,21 @@ class VirtualenvCommand:
         return virtualenv.find_pythons(extra_paths=extra_paths)
 
 
+class VirtualenvWindowCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+    pass
+
+
 class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand):
     def run(self, **kwargs):
         venv = self.get_virtualenv(**kwargs)
         postactivate = virtualenv.activate(venv)
         kwargs['path'] = postactivate['path']
         kwargs['env'] = dict(kwargs.get('env', {}), **postactivate['env'])
+        logger.info("Command executed with virtualenv \"{}\".".format(venv))
         super(VirtualenvExecCommand, self).run(**kwargs)
 
 
-class ActivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+class ActivateVirtualenvCommand(VirtualenvWindowCommand):
     def run(self, **kwargs):
         self.available_venvs = self.find_virtualenvs()
         self.window.show_quick_panel(self.available_venvs, self._set_virtualenv)
@@ -76,7 +87,7 @@ class ActivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand)
             self.set_virtualenv(venv)
 
 
-class DeactivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+class DeactivateVirtualenvCommand(VirtualenvWindowCommand):
     def run(self, **kwargs):
         self.set_virtualenv(None)
 
@@ -84,7 +95,7 @@ class DeactivateVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvComman
         return bool(self.get_virtualenv())
 
 
-class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
+class NewVirtualenvCommand(VirtualenvWindowCommand):
     def run(self, **kwargs):
         self.window.show_input_panel(
             "Virtualenv Path:", self.virtualenv_directories[0] + os.path.sep,
@@ -103,3 +114,26 @@ class NewVirtualenvCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
         cmd += [self.venv]
         self.window.run_command('exec', {'cmd': cmd})
         self.set_virtualenv(self.venv)
+
+
+class RemoveVirtualenvCommand(VirtualenvWindowCommand):
+    def run(self, **kwargs):
+        self.available_venvs = self.find_virtualenvs()
+        self.window.show_quick_panel(self.available_venvs, self.remove_virtualenv)
+
+    def remove_virtualenv(self, index):
+        if index == -1:
+            return
+
+        venv = self.available_venvs[index]
+        confirmed = sublime.ok_cancel_dialog(
+            "Please confirm deletion of virtualenv at \"{}\".".format(venv))
+        if confirmed:
+            try:
+                shutil.rmtree(venv)
+                logger.info("\"{}\" deleted.".format(venv))
+            except (IOError, OSError):
+                logger.error("Could not delete \"{}\".".format(venv))
+            else:
+                if venv == self.get_virtualenv():
+                    self.set_virtualenv(None)
