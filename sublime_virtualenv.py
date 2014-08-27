@@ -82,12 +82,15 @@ class VirtualenvCommand(sublime_plugin.WindowCommand):
         logger.info("Current virtualenv set to \"{}\".".format(venv))
 
     def find_virtualenvs(self):
-        """Return a list of found virtualenvs.
+        """Return a list of (basename, path) tuples of the found virtualenvs.
 
         Searches in open folders and paths defined in the settings.
+
+        The result is valid as input for Sublime's quick panel.
         """
         search_dirs = self.window.folders() + self.virtualenv_directories
-        return virtualenv.find_virtualenvs(search_dirs)
+        venvs = virtualenv.find_virtualenvs(search_dirs)
+        return [[os.path.basename(venv), venv] for venv in venvs]
 
     def find_pythons(self):
         """Find python executables in the system.
@@ -149,7 +152,7 @@ class ActivateVirtualenvCommand(VirtualenvCommand):
 
     def _set_virtualenv(self, index):
         if index != -1:
-            venv = self.available_venvs[index]
+            venv = self.available_venvs[index][1]
             self.set_virtualenv(venv)
 
 
@@ -227,7 +230,7 @@ class RemoveVirtualenvCommand(VirtualenvCommand):
         if index == -1:
             return
 
-        venv = self.available_venvs[index]
+        venv = self.available_venvs[index][1]
         confirmed = sublime.ok_cancel_dialog(
             "Please confirm deletion of virtualenv at:\n\"{}\".".format(venv))
         if confirmed:
