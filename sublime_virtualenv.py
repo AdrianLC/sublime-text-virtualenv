@@ -78,11 +78,23 @@ class VirtualenvWindowCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
 class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand):
     def run(self, **kwargs):
         venv = self.get_virtualenv(**kwargs)
+        if venv:
+            if not virtualenv.is_valid(venv):
+                self.set_virtualenv(None)
+                sublime.error_message(
+                    "Activated virtualenv at \"{}\" is corrupt or has been deleted. Build cancelled!\n"
+                    "Choose another virtualenv and start the build again.".format(venv)
+                )
+                return
+            kwargs = self.update_exec_kwargs(venv, **kwargs)
+            logger.info("Command executed with virtualenv \"{}\".".format(venv))
+        super(VirtualenvExecCommand, self).run(**kwargs)
+
+    def update_exec_kwargs(self, venv, **kwargs):
         postactivate = virtualenv.activate(venv)
         kwargs['path'] = postactivate['path']
         kwargs['env'] = dict(kwargs.get('env', {}), **postactivate['env'])
-        logger.info("Command executed with virtualenv \"{}\".".format(venv))
-        super(VirtualenvExecCommand, self).run(**kwargs)
+        return kwargs
 
 
 class ActivateVirtualenvCommand(VirtualenvWindowCommand):
