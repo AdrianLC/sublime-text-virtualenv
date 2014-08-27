@@ -1,5 +1,9 @@
+"""Utility functions for working with virtualenvs.
 
-__all__ = ['activate', 'find_virtualenvs', 'is_virtualenv', 'find_pythons']
+(Everything not dependent on Sublime or its API should go here.)
+"""
+
+__all__ = ('activate', 'find_virtualenvs', 'is_virtualenv', 'find_pythons')
 
 from functools import lru_cache
 from itertools import chain
@@ -18,21 +22,29 @@ PYTHON_NAME_RE = re.compile(r'python[\d\.]*(?:\.exe)?$')
 
 
 def activate(virtualenv):
-    return {'path': postactivate_path(virtualenv),
-            'env': postactivate_env(virtualenv)}
+    """Return a dict with the changes caused by the virtualenv.
 
+    The changes are:
+    - Prepend the path of the virtualenv binary directory to $PATH.
+    - Set a $VIRTUAL_ENV variable with the path to the activated virtualenv.
+    """
+    def postactivate_path():
+        current_path = os.environ.get('PATH', os.defpath)
+        virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
+        return os.pathsep.join((virtualenv_path, current_path))  # PATH=/path/to/venv/bin:$PATH
 
-def postactivate_path(virtualenv):
-    current_path = os.environ.get('PATH', os.defpath)
-    virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
-    return os.pathsep.join((virtualenv_path, current_path))  # PATH=/path/to/venv/bin:$PATH
+    def postactivate_env():
+        return {'VIRTUAL_ENV': virtualenv}
 
-
-def postactivate_env(virtualenv):
-    return {'VIRTUAL_ENV': virtualenv}
+    return {'path': postactivate_path(),
+            'env': postactivate_env()}
 
 
 def find_virtualenvs(paths):
+    """Find virtualenvs in the given paths.
+
+    Returns a sorted list with the results.
+    """
     virtualenvs = []
     for path in paths:
         if not os.path.isdir(path):
@@ -44,6 +56,10 @@ def find_virtualenvs(paths):
 
 
 def is_virtualenv(path):
+    """Test whether 'path' is a virtualenv.
+
+    Assumes that any directory with a "./bin/activate" is a valid virtualenv.
+    """
     try:
         return os.path.isfile(os.path.join(path, VIRTUALENV_BINDIR, "activate"))
     except IOError:
@@ -54,6 +70,15 @@ is_valid = is_virtualenv
 
 @lru_cache()
 def find_pythons(paths=(), extra_paths=()):
+    """Find available python binaries.
+
+    Matches a regex against filenames.
+
+    Searches every directory in $PATH by default.
+    Extends the search to any additional directory passed in 'extra_paths'.
+
+    Returns a sorted list with the results.
+    """
     paths = chain(paths or os.environ.get('PATH', os.defpath).split(os.pathsep), extra_paths)
     pythons = []
     for path in filter(os.path.isdir, paths):

@@ -1,3 +1,4 @@
+"""Sublime Text commands for virtualenv management."""
 
 import logging
 import os.path
@@ -18,26 +19,40 @@ SETTINGS = "Virtualenv.sublime-settings"
 
 
 def settings():
+    """Return the settings of the plugin."""
     return sublime.load_settings(SETTINGS)
 
 
 def save_settings():
+    """Save plugin settings to disk."""
     sublime.save_settings(SETTINGS)
 settings.save = save_settings
 
 
-class VirtualenvCommand:
+class VirtualenvCommand(sublime_plugin.WindowCommand):
+
+    """Base command with virtualenv management functionality."""
 
     @property
     def virtualenv_exec(self):
+        """Virtualenv executable as specified in the settings.
+
+        Returns a list with the command split by shlex.split().
+        """
         return shlex.split(settings().get('executable'))
 
     @property
     def virtualenv_directories(self):
+        """The list of directory paths specified in the settings."""
         return [os.path.expanduser(path)
                 for path in settings().get('virtualenv_directories')]
 
     def get_virtualenv(self, **kwargs):
+        """Get current virtualenv from project data.
+
+        (It will work even if the project has not been saved.
+        The data is stored internally anyway.)
+        """
         venv = kwargs.pop('virtualenv', "")
 
         if not venv:
@@ -47,6 +62,10 @@ class VirtualenvCommand:
         return os.path.expanduser(venv)
 
     def set_virtualenv(self, venv):
+        """Update the current virtualenv in project data.
+
+        If the passed venv in None, remove virtualenv data from project.
+        """
         project_data = self.window.project_data() or {}
 
         if venv:
@@ -63,20 +82,39 @@ class VirtualenvCommand:
         logger.info("Current virtualenv set to \"{}\".".format(venv))
 
     def find_virtualenvs(self):
+        """Return a list of found virtualenvs.
+
+        Searches in open folders and paths defined in the settings.
+        """
         search_dirs = self.window.folders() + self.virtualenv_directories
         return virtualenv.find_virtualenvs(search_dirs)
 
     def find_pythons(self):
+        """Find python executables in the system.
+
+        Searches in os.environ and additional directories defined
+        in the settings.
+        """
         extra_paths = tuple(settings().get('extra_paths', []))
         return virtualenv.find_pythons(extra_paths=extra_paths)
 
 
-class VirtualenvWindowCommand(sublime_plugin.WindowCommand, VirtualenvCommand):
-    pass
-
-
 class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand):
+
+    """Extends the default exec command adapting the build parameters."""
+
     def run(self, **kwargs):
+        """Exec the command with virtualenv.
+
+        If a virtualenv is active and valid update the build parameters
+        as needed and call the built-in command.
+
+        Else, if no virtualenv is active, do nothing and call the built-in
+        command.
+
+        Else, if the active virtualenv is invalid or corrupt display an error
+        message and cancel execution.
+        """
         venv = self.get_virtualenv(**kwargs)
         if venv:
             if not virtualenv.is_valid(venv):
@@ -92,14 +130,20 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
         super(VirtualenvExecCommand, self).run(**kwargs)
 
     def update_exec_kwargs(self, venv, **kwargs):
+        """Modify exec kwargs in order to use the virtualenv."""
         postactivate = virtualenv.activate(venv)
         kwargs['path'] = postactivate['path']
         kwargs['env'] = dict(kwargs.get('env', {}), **postactivate['env'])
+        kwargs['env'].pop('PYTHONHOME', None)
         return kwargs
 
 
-class ActivateVirtualenvCommand(VirtualenvWindowCommand):
+class ActivateVirtualenvCommand(VirtualenvCommand):
+
+    """Command for selecting active virtualenv."""
+
     def run(self, **kwargs):
+        """Display available virtualenvs in quick panel."""
         self.available_venvs = self.find_virtualenvs()
         self.window.show_quick_panel(self.available_venvs, self._set_virtualenv)
 
@@ -109,21 +153,34 @@ class ActivateVirtualenvCommand(VirtualenvWindowCommand):
             self.set_virtualenv(venv)
 
 
-class DeactivateVirtualenvCommand(VirtualenvWindowCommand):
+class DeactivateVirtualenvCommand(VirtualenvCommand):
+
+    """"Commmand for deactivating the virtualenv."""
+
     def run(self, **kwargs):
+        """Just delete the virtualenv entry from project data."""
         self.set_virtualenv(None)
 
     def is_enabled(self):
+        """Only if the virtualenv entry is set."""
         return bool(self.get_virtualenv())
 
 
-class NewVirtualenvCommand(VirtualenvWindowCommand):
+class NewVirtualenvCommand(VirtualenvCommand):
+
+    """Command for creating a new virtualenv."""
+
     def run(self, **kwargs):
+        """Show input panel requesting virtualenv destination."""
         self.window.show_input_panel(
             "Virtualenv Path:", self.virtualenv_directories[0] + os.path.sep,
             self.get_python, None, None)
 
     def get_python(self, venv):
+        """Show available python binaries in quick panel.
+
+        Callback called with virtualenv destination.
+        """
         if not venv:
             return
 
@@ -132,6 +189,18 @@ class NewVirtualenvCommand(VirtualenvWindowCommand):
         self.window.show_quick_panel(self.found_pythons, self.create_virtualenv)
 
     def create_virtualenv(self, python_index):
+        """Execute the command and create the virtualenv.
+
+        Callback called with selected python.
+
+        Constructs the appropriate command with the virtualenv command,
+        the selected python and the destination.
+
+        Delegates command execution to the built-in exec command, so
+        the process can be killed.
+
+        It will also activate the created virtualenv.
+        """
         cmd = self.virtualenv_exec
         if python_index != -1:
             python = self.found_pythons[python_index]
@@ -141,12 +210,20 @@ class NewVirtualenvCommand(VirtualenvWindowCommand):
         self.set_virtualenv(self.venv)
 
 
-class RemoveVirtualenvCommand(VirtualenvWindowCommand):
+class RemoveVirtualenvCommand(VirtualenvCommand):
+
+    """Command for deleting virtualenv directories."""
+
     def run(self, **kwargs):
+        """Display quick panel with found virtualenvs."""
         self.available_venvs = self.find_virtualenvs()
         self.window.show_quick_panel(self.available_venvs, self.remove_virtualenv)
 
     def remove_virtualenv(self, index):
+        """Request confirmation and delete the directory tree.
+
+        Also set current virtualenv to None.
+        """
         if index == -1:
             return
 
@@ -164,13 +241,21 @@ class RemoveVirtualenvCommand(VirtualenvWindowCommand):
                     self.set_virtualenv(None)
 
 
-class AddVirtualenvDirectoryCommand(VirtualenvWindowCommand):
+class AddVirtualenvDirectoryCommand(VirtualenvCommand):
+
+    """Shortcut command for adding paths to the 'virtualenv_directories' setting."""
+
     def run(self, **kwargs):
+        """Shot input panel requesting path to user."""
         self.window.show_input_panel(
             "Directory path:", os.path.expanduser("~") + os.path.sep,
             self.add_directory, None, None)
 
     def add_directory(self, directory):
+        """Add given directory to the list.
+
+        If the path is not a directory show error dialog.
+        """
         if not directory:
             return
 
