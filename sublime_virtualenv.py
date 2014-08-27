@@ -86,6 +86,7 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
                     "Choose another virtualenv and start the build again.".format(venv)
                 )
                 return
+
             kwargs = self.update_exec_kwargs(venv, **kwargs)
             logger.info("Command executed with virtualenv \"{}\".".format(venv))
         super(VirtualenvExecCommand, self).run(**kwargs)
@@ -151,7 +152,7 @@ class RemoveVirtualenvCommand(VirtualenvWindowCommand):
 
         venv = self.available_venvs[index]
         confirmed = sublime.ok_cancel_dialog(
-            "Please confirm deletion of virtualenv at \"{}\".".format(venv))
+            "Please confirm deletion of virtualenv at:\n\"{}\".".format(venv))
         if confirmed:
             try:
                 shutil.rmtree(venv)

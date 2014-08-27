@@ -1,6 +1,17 @@
+// Default settings for Virtualenv plugin:
 {
-    "executable": "virtualenv",
+    // Assuming virtualenv installed on default python prefix.
+    // Depending on your setup you might want to change this to something like:
+    // "virtualenv", "virtualenv-3.3", "python3 -m virtualenv" ...
+    "executable": "python -m virtualenv",
+
+    // Directory paths searched for virtualenvs.
+    // First one will be used as default destination for new virtualenvs.
     "virtualenv_directories": [
-        "~/.virtualenvs",
-    ]
+        "~/.virtualenvs",  // virtualenvwrapper $WORKON_HOME
+    ],
+
+    // Additonal paths searched for python installations.
+    // Portable pythons? Perhaps?
+    "extra_paths": []
 }

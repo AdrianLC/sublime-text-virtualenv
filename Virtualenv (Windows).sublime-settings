@@ -1,6 +1,8 @@
+// Default settings for Virtualenv plugin in Windows systems:
 {
-    "executable": "python -m virtualenv",
+    // Directory paths searched for virtualenvs.
+    // First one will be used as default destination for new virtualenvs.
     "virtualenv_directories": [
-        "~\\Envs",
+        "~\\Envs",  // virtualenwrapper-win %WORKON_HOME%
     ]
 }

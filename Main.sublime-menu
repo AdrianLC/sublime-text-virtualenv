@@ -20,50 +20,6 @@
                 "args": {
                     "file": "${packages}/User/Virtualenv.sublime-settings"
                 }
-            }, {
-                "caption": "-"
-            }, {
-                "caption": "Key Bindings – Default",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/Virtualenv/Default (OSX).sublime-keymap",
-                    "platform": "OSX"
-                }
-            }, {
-                "caption": "Key Bindings – User",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/User/Default (OSX).sublime-keymap",
-                    "platform": "OSX"
-                }
-            }, {
-                "caption": "Key Bindings – Default",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/Virtualenv/Default (Linux).sublime-keymap",
-                    "platform": "Linux"
-                }
-            }, {
-                "caption": "Key Bindings – User",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/User/Default (Linux).sublime-keymap",
-                    "platform": "Linux"
-                }
-            }, {
-                "caption": "Key Bindings – Default",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/Virtualenv/Default (Windows).sublime-keymap",
-                    "platform": "Windows"
-                }
-            }, {
-                "caption": "Key Bindings – User",
-                "command": "open_file",
-                "args": {
-                    "file": "${packages}/User/Default (Windows).sublime-keymap",
-                    "platform": "Windows"
-                }
             }]
         }]
     }]
