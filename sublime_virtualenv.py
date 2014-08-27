@@ -63,7 +63,8 @@ class VirtualenvCommand:
         logger.info("Current virtualenv set to \"{}\".".format(venv))
 
     def find_virtualenvs(self):
-        return virtualenv.find_virtualenvs(self.virtualenv_directories)
+        search_dirs = self.window.folders() + self.virtualenv_directories
+        return virtualenv.find_virtualenvs(search_dirs)
 
     def find_pythons(self):
         extra_paths = tuple(settings().get('extra_paths', []))
