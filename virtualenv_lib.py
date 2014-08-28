@@ -28,16 +28,13 @@ def activate(virtualenv):
     - Prepend the path of the virtualenv binary directory to $PATH.
     - Set a $VIRTUAL_ENV variable with the path to the activated virtualenv.
     """
-    def postactivate_path():
-        current_path = os.environ.get('PATH', os.defpath)
-        virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
-        return os.pathsep.join((virtualenv_path, current_path))  # PATH=/path/to/venv/bin:$PATH
+    system_path = os.environ.get('PATH', os.defpath)
+    virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
+    path = os.pathsep.join((virtualenv_path, system_path))  # PATH=/path/to/venv/bin:$PATH
 
-    def postactivate_env():
-        return {'VIRTUAL_ENV': virtualenv}
+    env = {'VIRTUAL_ENV': virtualenv}
 
-    return {'path': postactivate_path(),
-            'env': postactivate_env()}
+    return {'path': path, 'env': env}
 
 
 def find_virtualenvs(paths):

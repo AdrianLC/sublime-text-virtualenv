@@ -1,0 +1,41 @@
+Sublime Text - Virtualenv
+=========================
+
+Manage your virtualenvs directly from Sublime Text 3. (BETA)
+
+## Features
+
+- Reusable build system. Execute code with a virtualenv without
+editing your paths manually.
+- Virtualenv search. Finds virtualenvs in the open folders or anywhere in your system.
+- Activation/Deactivation. Select or disable the current virtualenv easily.
+- Create and delete virtualenvs. With target python selection.
+
+
+## Support
+
+Only Sublime Text 3. Tested in Linux and Windows but it should work in OS X as well.
+
+
+## Usage
+
+- Set your build system to `Python + Virtualenv`. (Tools -> Build System)
+- Search "Virtualenv" in the command palette.
+
+
+For further details and instructions see the README:
+Preferences -> Package Settings -> Virtualenv -> README
+
+-----------------------------------------------------------------------------------------
+
+Hello! Thank you for testing this package.
+
+IMPORTANT:
+
+Before you start using the commands verify that the default settings are suitable for
+your system. Check them in Preferences -> Package Settings -> Virtualenv.
+*But* do not modify the default settings as you will lose all the changes if the package
+is updated. You should override the necessary settings in Virtualenv -> User instead.
+
+Please report any issues or suggestions in the issue tracker:
+https://github.com/AdrianLC/sublime-text-virtualenv/issues
