@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 VIRTUALENV_BINDIR = "Scripts" if sys.platform == 'win32' else "bin"
 
 PYTHON_NAME_RE = re.compile(r'python[\d\.]*(?:\.exe)?$')
+PYPY_NAME_RE = re.compile(r'pypy[\d\.]*(?:\.exe)?$')
 
 
 def activate(virtualenv):
@@ -76,10 +77,15 @@ def find_pythons(paths=(), extra_paths=()):
 
     Returns a sorted list with the results.
     """
-    paths = chain(paths or os.environ.get('PATH', os.defpath).split(os.pathsep), extra_paths)
-    pythons = []
+    paths = paths or os.environ.get('PATH', os.defpath).split(os.pathsep)
+    paths = chain(paths, extra_paths)
+
+    found_pythons = []
     for path in filter(os.path.isdir, paths):
-        python_names = filter(PYTHON_NAME_RE.match, os.listdir(path))
-        pythons += sorted(filter(os.path.isfile, (os.path.join(path, python)
-                          for python in python_names)))
-    return pythons
+        names = os.listdir(path)
+        python_names = sorted(filter(PYTHON_NAME_RE.match, names))
+        pypy_names = sorted(filter(PYPY_NAME_RE.match, names))
+        pythons = filter(os.path.isfile, (os.path.join(path, name)
+                         for name in python_names + pypy_names))
+        found_pythons += pythons
+    return found_pythons
