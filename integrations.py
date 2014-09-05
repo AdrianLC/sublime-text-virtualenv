@@ -49,6 +49,6 @@ class CurrentVirtualenvReplCommand(VirtualenvCommand):
         """If SublimeREPL is installed and a virtualenv is active."""
         try:
             import SublimeREPL  # noqa
-            return bool(self.get_virtualesnv())
+            return bool(self.get_virtualenv())
         except ImportError:
             return False
