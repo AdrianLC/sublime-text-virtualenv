@@ -2,7 +2,7 @@
 
 import sublime
 
-from .commands import VirtualenvCommand
+from .commands import VirtualenvCommand, InvalidVirtualenv
 from . import virtualenv_lib as virtualenv
 
 
@@ -17,14 +17,10 @@ class CurrentVirtualenvReplCommand(VirtualenvCommand):
         Based on the original Python + virtualenv REPL:
         https://github.com/wuub/SublimeREPL/blob/master/lang_integration.py#L86
         """
-        venv = self.get_virtualenv(**kwargs)
-
-        if not virtualenv.is_valid(venv):
-            self.set_virtualenv(None)
-            sublime.error_message(
-                "Activated virtualenv at \"{}\" is corrupt or has been deleted. REPL cancelled!\n"
-                "Choose another virtualenv and launch the REPL again.".format(venv)
-            )
+        try:
+            venv = self.get_virtualenv(validate=True, **kwargs)
+        except InvalidVirtualenv as error:
+            sublime.error_message(str(error) + " REPL cancelled!")
             return
 
         postactivate = virtualenv.activate(venv)

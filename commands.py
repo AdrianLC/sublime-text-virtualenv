@@ -29,6 +29,18 @@ def save_settings():
 settings.save = save_settings
 
 
+class InvalidVirtualenv(Exception):
+
+    """Exception raised when the current virtualenv is missing or corrupt."""
+
+    def __init__(self, venv):
+        """Construct automatic error message from virtualenv path."""
+        message = (
+            "Virtualenv at \"{}\" is missing, corrupt or has been deleted.".format(venv))
+        super(InvalidVirtualenv, self).__init__(message)
+        self.message = message
+
+
 class VirtualenvCommand(sublime_plugin.WindowCommand):
 
     """Base command with virtualenv management functionality."""
@@ -47,19 +59,27 @@ class VirtualenvCommand(sublime_plugin.WindowCommand):
         return [os.path.expanduser(path)
                 for path in settings().get('virtualenv_directories')]
 
-    def get_virtualenv(self, **kwargs):
+    def get_virtualenv(self, validate=False, **kwargs):
         """Get current virtualenv from project data.
 
         (It will work even if the project has not been saved.
         The data is stored internally anyway.)
+
+        Takes an optional flag 'validate'. If True, the virtualenv
+        will be checked and if the validation fails 'InvalidVirtualenv'
+        is raised.
         """
         venv = kwargs.pop('virtualenv', "")
-
         if not venv:
             project_data = self.window.project_data() or {}
             venv = project_data.get('virtualenv', "")
+        venv = os.path.expanduser(venv)
 
-        return os.path.expanduser(venv)
+        if validate and venv and not virtualenv.is_valid(venv):
+            self.set_virtualenv(None)
+            raise InvalidVirtualenv(venv)
+
+        return venv
 
     def set_virtualenv(self, venv):
         """Update the current virtualenv in project data.
@@ -118,19 +138,15 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
         Else, if the active virtualenv is invalid or corrupt display an error
         message and cancel execution.
         """
-        venv = self.get_virtualenv(**kwargs)
-        if venv:
-            if not virtualenv.is_valid(venv):
-                self.set_virtualenv(None)
-                sublime.error_message(
-                    "Activated virtualenv at \"{}\" is corrupt or has been deleted. Build cancelled!\n"
-                    "Choose another virtualenv and start the build again.".format(venv)
-                )
-                return
-
-            kwargs = self.update_exec_kwargs(venv, **kwargs)
-            logger.info("Command executed with virtualenv \"{}\".".format(venv))
-        super(VirtualenvExecCommand, self).run(**kwargs)
+        try:
+            venv = self.get_virtualenv(validate=True, **kwargs)
+        except InvalidVirtualenv as error:
+            sublime.error_message(str(error) + " Execution cancelled!")
+        else:
+            if venv:
+                kwargs = self.update_exec_kwargs(venv, **kwargs)
+                logger.info("Command executed with virtualenv \"{}\".".format(venv))
+            super(VirtualenvExecCommand, self).run(**kwargs)
 
     def update_exec_kwargs(self, venv, **kwargs):
         """Modify exec kwargs in order to use the virtualenv."""

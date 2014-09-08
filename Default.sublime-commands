@@ -5,5 +5,5 @@
     { "caption": "Virtualenv: Remove", "command": "remove_virtualenv" },
     { "caption": "Virtualenv: Add directory", "command": "add_virtualenv_directory" },
 
-    {"caption": "Virtualenv: SublimeREPL - Python", "command": "current_virtualenv_repl" }
+    { "caption": "Virtualenv: SublimeREPL - Python", "command": "current_virtualenv_repl" }
 ]
