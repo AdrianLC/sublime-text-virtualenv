@@ -9,7 +9,9 @@ Manage your virtualenvs directly from Sublime Text __3__. (BETA)
 editing your paths manually.
 - __Virtualenv search__. Finds virtualenvs in the open folders or _anywhere_ in your system.
 - __Activation/Deactivation__. Select or disable the current virtualenv easily.
-- __Create and delete virtualenvs__. With target python selection.
+- __Create and delete virtualenvs__. With target python selection. Supports both the standard
+[virtualenv][] package and the built-in [venv][pyvenv] module from Python 3.3.
+- __Integration with other packages__. SublimeREPL.
 
 
 ## Support
@@ -46,7 +48,8 @@ The command `Virtualenv: Deactivate` is available when a virtualenv is activated
 
 #### Creating a virtualenv
 
-Choose `Virtualenv: New`, type a destination path and select a python binary. The new virtualenv will be activated automatically.
+Choose `Virtualenv: New` (or `Virtualenv: New (venv)` for built-in virtualenv), type a destination
+path and select a python binary. The new virtualenv will be activated automatically.
 
 #### Deleting a virtualenv
 
@@ -82,9 +85,9 @@ Extending or customizing the build system should be possible. Just set `"target"
 
 ## Future plans
 
-No promises. Just some ideas for possible improvements.
+Just some ideas for possible improvements.
 
-- [pyvenv][] support (Python 3.3 built-in virtualenv).
+- Integration with other packages. Paths for [SublimeCodeIntel][]?
 - _Brother_ package for `pip` commands.
 
 
@@ -92,6 +95,9 @@ No promises. Just some ideas for possible improvements.
 
 [packageControl]: https://sublime.wbond.net/docs/usage "Package Control"
 [buildSystems]: http://sublime-text-unofficial-documentation.readthedocs.org/en/latest/reference/build_systems.html "Sublime Text build systems"
+[virtualenv]: https://virtualenv.pypa.io/en/latest/ "virtualenv"
 [virtualenvwrapper]: http://virtualenvwrapper.readthedocs.org/en/latest/ "virtualenvwrapper"
 [virtualenvwrapper-win]: https://github.com/davidmarble/virtualenvwrapper-win/ "virtualenvwrapper-win"
 [pyvenv]: https://docs.python.org/3.3/library/venv.html "pyvenv"
+[SublimeREPL]: https://github.com/wuub/SublimeREPL "SublimeREPL"
+[SublimeCodeIntel]: http://sublimecodeintel.github.io/SublimeCodeIntel/ "SublimeCodeIntel"

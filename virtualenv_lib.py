@@ -10,6 +10,7 @@ from itertools import chain
 import logging
 import os
 import re
+import subprocess
 import sys
 
 
@@ -67,7 +68,7 @@ is_valid = is_virtualenv
 
 
 @lru_cache()
-def find_pythons(paths=(), extra_paths=()):
+def find_pythons(paths=(), extra_paths=(), req_modules=()):
     """Find available python binaries.
 
     Matches a regex against filenames.
@@ -75,17 +76,30 @@ def find_pythons(paths=(), extra_paths=()):
     Searches every directory in $PATH by default.
     Extends the search to any additional directory passed in 'extra_paths'.
 
+    Found pythons will be optionally filtered based on the availability of
+    modules passed through the 'req_modules' parameter.
+
     Returns a sorted list with the results.
     """
     paths = paths or os.environ.get('PATH', os.defpath).split(os.pathsep)
     paths = chain(paths, extra_paths)
+
+    is_exec = lambda path: os.path.isfile(path) and os.access(path, os.X_OK)
 
     found_pythons = []
     for path in filter(os.path.isdir, paths):
         names = os.listdir(path)
         python_names = sorted(filter(PYTHON_NAME_RE.match, names))
         pypy_names = sorted(filter(PYPY_NAME_RE.match, names))
-        pythons = filter(os.path.isfile, (os.path.join(path, name)
-                         for name in python_names + pypy_names))
+        pythons = list(filter(is_exec, (os.path.join(path, name)
+                              for name in python_names + pypy_names)))
+
+        if req_modules:
+            modules = ", ".join(req_modules)
+            for python in pythons[:]:
+                import_error = subprocess.call([python, "-c", "import " + modules])
+                if import_error:
+                    pythons.remove(python)
+
         found_pythons += pythons
     return found_pythons

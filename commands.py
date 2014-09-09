@@ -149,7 +149,7 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
             super(VirtualenvExecCommand, self).run(**kwargs)
 
     def update_exec_kwargs(self, venv, **kwargs):
-        """Modify exec kwargs in order to use the virtualenv."""
+        """Modify exec kwargs to make use of the virtualenv."""
         postactivate = virtualenv.activate(venv)
         kwargs['path'] = postactivate['path']
         kwargs['env'] = dict(kwargs.get('env', {}), **postactivate['env'])
@@ -225,6 +225,27 @@ class NewVirtualenvCommand(VirtualenvCommand):
             python = self.found_pythons[python_index]
             cmd += ['-p', python]
         cmd += [self.venv]
+        self.window.run_command('exec', {'cmd': cmd})
+        self.set_virtualenv(self.venv)
+
+
+class NewBuiltinVirtualenvCommand(NewVirtualenvCommand):
+
+    """Command for creating a new virtualenv with built-in venv module."""
+
+    def find_pythons(self):
+        """With venv module available."""
+        extra_paths = tuple(settings().get('extra_paths', []))
+        return virtualenv.find_pythons(
+            extra_paths=extra_paths, req_modules=('venv', ))
+
+    def create_virtualenv(self, python_index):
+        """With the venv module installed in the selected python."""
+        if python_index == -1:
+            return
+
+        python = self.found_pythons[python_index]
+        cmd = [python, "-m", "venv", self.venv]
         self.window.run_command('exec', {'cmd': cmd})
         self.set_virtualenv(self.venv)
 
