@@ -17,7 +17,11 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-VIRTUALENV_BINDIR = "Scripts" if sys.platform == 'win32' else "bin"
+BINDIR = "bin"
+ACTIVATE_SCRIPT = "activate"
+if sys.platform == 'win32':
+    BINDIR = "Scripts"
+    ACTIVATE_SCRIPT += ".bat"
 
 PYTHON_NAME_RE = re.compile(r'python[\d\.]*(?:\.exe)?$')
 PYPY_NAME_RE = re.compile(r'pypy[\d\.]*(?:\.exe)?$')
@@ -31,7 +35,7 @@ def activate(virtualenv):
     - Set a $VIRTUAL_ENV variable with the path to the activated virtualenv.
     """
     system_path = os.environ.get('PATH', os.defpath)
-    virtualenv_path = os.path.join(virtualenv, VIRTUALENV_BINDIR)  # /path/to/venv/bin
+    virtualenv_path = os.path.join(virtualenv, BINDIR)  # /path/to/venv/bin
     path = os.pathsep.join((virtualenv_path, system_path))  # PATH=/path/to/venv/bin:$PATH
 
     env = {'VIRTUAL_ENV': virtualenv}
@@ -60,7 +64,7 @@ def is_virtualenv(path):
     Assumes that any directory with a "./bin/activate" is a valid virtualenv.
     """
     try:
-        return os.path.isfile(os.path.join(path, VIRTUALENV_BINDIR, "activate"))
+        return os.path.isfile(os.path.join(path, BINDIR, ACTIVATE_SCRIPT))
     except IOError:
         return False
 
@@ -95,9 +99,16 @@ def find_pythons(paths=(), extra_paths=(), req_modules=()):
                               for name in python_names + pypy_names)))
 
         if req_modules:
+            # Hide subprocess window in Windows:
+            startupinfo = None
+            if sys.platform == 'win32':
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
             modules = ", ".join(req_modules)
             for python in pythons[:]:
-                import_error = subprocess.call([python, "-c", "import " + modules])
+                cmd = [python, "-c", "import " + modules]
+                import_error = subprocess.call(cmd, startupinfo=startupinfo)
                 if import_error:
                     pythons.remove(python)
 
