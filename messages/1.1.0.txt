@@ -1,0 +1,7 @@
+Virtualenv 1.1.0
+================
+
+- pypy executables should also show up now in the list of available python targets.
+- Added creation of virtualenvs with the built-in 'venv' module (Python 3.3+).
+- Integration with SublimeREPL. If SublimeREPL is installed and a virtualenv is active the
+  command "Virtualenv: SublimeREPL - Python" will launch a REPL with the current virtualenv.

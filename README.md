@@ -1,7 +1,7 @@
 Sublime Text - Virtualenv
 =========================
 
-Manage your virtualenvs directly from Sublime Text __3__. (BETA)
+Manage your virtualenvs directly from Sublime Text __3__.
 
 ## Features
 
@@ -55,6 +55,10 @@ path and select a python binary. The new virtualenv will be activated automatica
 
 Use the command `Virtualenv: Remove`, choose a virtualenv and confirm.
 
+#### Integrations
+
+Launch a Python REPL using the current virtualenv with the command `Virtualenv: SublimeREPL - Python`.
+
 
 ## Settings
 
@@ -87,7 +91,7 @@ Extending or customizing the build system should be possible. Just set `"target"
 
 Just some ideas for possible improvements.
 
-- Integration with other packages. Paths for [SublimeCodeIntel][]?
+- Integration with more packages. Paths for [SublimeCodeIntel][]?
 - _Brother_ package for `pip` commands.
 
 
