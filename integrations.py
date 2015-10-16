@@ -23,23 +23,25 @@ class CurrentVirtualenvReplCommand(VirtualenvCommand):
             sublime.error_message(str(error) + " REPL cancelled!")
             return
 
+        self.repl_open(venv)
+
+    def repl_open(self, venv):
+        """Open a SublimeREPL using provided commands"""
         postactivate = virtualenv.activate(venv)
-
-        self.window.run_command('repl_open', {
-            'type': 'subprocess',
-            'autocomplete_server': True,
-
-            'cmd': ["python", "-u", "${packages}/SublimeREPL/config/Python/ipy_repl.py"],
-            'cwd': "$file_path",
-            'encoding': 'utf8',
-            'extend_env': dict({
-                'PATH': postactivate['path'],
-                'PYTHONIOENCODING': 'utf-8'
-            }, **postactivate['env']),
-
-            'syntax': "Packages/Python/Python.tmLanguage",
-            'external_id': "python"
-        })
+        self.window.run_command(
+            'repl_open', {
+                'encoding': 'utf8',
+                'type': 'subprocess',
+                'cmd': ["python", "-i", "-u"],
+                'cwd': '$file_path',
+                'extend_env': dict({
+                    'PATH': postactivate['path'],
+                    'PYTHONIOENCODING': 'utf-8'
+                }, **postactivate['env']),
+                'external_id': "venv_python",
+                'syntax': 'Packages/Python/Python.tmLanguage'
+            }
+        )
 
     def is_enabled(self):
         """If SublimeREPL is installed and a virtualenv is active."""
