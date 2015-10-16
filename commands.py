@@ -90,7 +90,7 @@ class VirtualenvCommand(sublime_plugin.WindowCommand):
 
         if venv:
             project_data['virtualenv'] = venv
-            pyn = venv + '\\Scripts\\Python.exe'
+            pyn = os.path.join(venv, 'Scripts', 'Python')
             if not project_data.get('settings', None):
                 print('settings added for virtualenv')
                 project_data['settings'] = {'python_interpreter': pyn}
