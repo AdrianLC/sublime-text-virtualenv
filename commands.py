@@ -4,6 +4,7 @@ import logging
 import os.path
 import shlex
 import shutil
+import sys
 
 import sublime
 import sublime_plugin
@@ -146,6 +147,10 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
             if venv:
                 kwargs = self.update_exec_kwargs(venv, **kwargs)
                 logger.info("Command executed with virtualenv \"{}\".".format(venv))
+                # On OS X, avoid being run in a login shell, to preserve the virtualenv-ized PATH
+                if sys.platform == "darwin" and "shell_cmd" in kwargs:
+                    kwargs["cmd"] = ["/bin/bash", "-c", kwargs["shell_cmd"]]
+                    del kwargs["shell_cmd"]
             super(VirtualenvExecCommand, self).run(**kwargs)
 
     def update_exec_kwargs(self, venv, **kwargs):
