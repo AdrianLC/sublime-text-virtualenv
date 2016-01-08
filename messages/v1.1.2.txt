@@ -1,0 +1,4 @@
+Virtualenv 1.1.2
+================
+
+- Fixed an issue with virtualenvs not being correctly activated on Mac OS X.
