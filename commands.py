@@ -4,6 +4,7 @@ import logging
 import os.path
 import shlex
 import shutil
+import sys
 
 import sublime
 import sublime_plugin
@@ -154,6 +155,10 @@ class VirtualenvExecCommand(sublime_default.exec.ExecCommand, VirtualenvCommand)
         kwargs['path'] = postactivate['path']
         kwargs['env'] = dict(kwargs.get('env', {}), **postactivate['env'])
         kwargs['env'].pop('PYTHONHOME', None)
+        # On OS X, avoid being run in a login shell, to preserve the virtualenv-ized PATH
+        if sys.platform == 'darwin' and 'shell_cmd' in kwargs:
+            kwargs['cmd'] = ['/bin/bash', '-c', kwargs['shell_cmd']]
+            del kwargs['shell_cmd']
         return kwargs
 
 
