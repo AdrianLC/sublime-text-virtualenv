@@ -3,6 +3,10 @@ Sublime Text - Virtualenv
 
 Manage your virtualenvs directly from Sublime Text __3__.
 
+## Disclaimer: Not Maintained
+
+**I cannot maintain this project anymore since I stopped using Sublime Text. If you're interested on taking over reach out and we can discuss.**
+
 ## Features
 
 - __Reusable build system__. Execute code with a virtualenv without
