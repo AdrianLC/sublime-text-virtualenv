@@ -91,10 +91,18 @@ class VirtualenvCommand(sublime_plugin.WindowCommand):
 
         if venv:
             project_data['virtualenv'] = venv
+            pyn = os.path.join(venv, 'Scripts', 'Python')
+            if not project_data.get('settings', None):
+                print('settings added for virtualenv')
+                project_data['settings'] = {'python_interpreter': pyn}
+            else:
+                print('virtualenv added to settings')
+                project_data['settings']['python_interpreter'] = pyn
             sublime.status_message("({}) ACTIVATED".format(os.path.basename(venv)))
         else:
             try:
                 del project_data['virtualenv']
+                del project_data['settings']['python_interpreter']
                 sublime.status_message("DEACTIVATED")
             except KeyError:
                 pass
